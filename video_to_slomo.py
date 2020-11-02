@@ -21,6 +21,7 @@ parser.add_argument("--fps", type=float, default=30, help='specify fps of output
 parser.add_argument("--sf", type=int, required=True, help='specify the slomo factor N. This will increase the frames by Nx. Example sf=2 ==> 2x frames')
 parser.add_argument("--batch_size", type=int, default=1, help='Specify batch size for faster conversion. This will depend on your cpu/gpu memory. Default: 1')
 parser.add_argument("--output", type=str, default="output.mkv", help='Specify output file name. Default: output.mp4')
+parser.add_argument("--compress", action='store_true')
 args = parser.parse_args()
 
 def check():
@@ -76,8 +77,13 @@ def extract_frames(video, outDir):
 
 def create_video(dir):
     error = ""
-    print('{} -r {} -i {}/%d.png -vcodec ffvhuff {}'.format(os.path.join(args.ffmpeg_dir, "ffmpeg"), args.fps, dir, args.output))
-    retn = os.system('{} -r {} -i {}/%d.png -vcodec ffvhuff "{}"'.format(os.path.join(args.ffmpeg_dir, "ffmpeg"), args.fps, dir, args.output))
+    if args.compress:
+        print('{} -r {} -i {}/%d.png -pix_fmt yuv420p {}'.format(os.path.join(args.ffmpeg_dir, "ffmpeg"), args.fps, dir, args.output))
+        retn = os.system('{} -r {} -i {}/%d.png -pix_fmt yuv420p "{}"'.format(os.path.join(args.ffmpeg_dir, "ffmpeg"), args.fps, dir, args.output))
+    else:
+        print('{} -r {} -i {}/%d.png -vcodec ffvhuff {}'.format(os.path.join(args.ffmpeg_dir, "ffmpeg"), args.fps, dir, args.output))
+        retn = os.system('{} -r {} -i {}/%d.png -vcodec ffvhuff "{}"'.format(os.path.join(args.ffmpeg_dir, "ffmpeg"), args.fps, dir, args.output))
+
     if retn:
         error = "Error creating output video. Exiting."
     return error
